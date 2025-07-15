@@ -1,94 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Malla Psicología UNMDP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Malla Curricular Psicología</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .cuatrimestre { border: 1px solid #ccc; padding: 10px; border-radius: 8px; }
-    .materia {
-      padding: 8px; margin: 4px 0;
-      background: #f8d5e6; /* rosa claro: pendiente */
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fefefe;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
     }
-    .materia.cursada { background: #e090ad; } /* rosa fuerte */
-    .materia.aprobada { background: #a8e8e3; text-decoration: line-through; }
-    .materia.deshabilitada { opacity: 0.4; pointer-events: none; }
+    h1 {
+      text-align: center;
+      color: #aa7ea8;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .year {
+      background-color: #e6f2f0;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .year h2 {
+      color: #5a8f86;
+    }
+    .cuatrimestre {
+      margin-top: 1rem;
+    }
+    .cuatrimestre h3 {
+      margin-bottom: 0.5rem;
+      color: #8c6d8d;
+    }
+    .materia {
+      background-color: #fce4ec;
+      padding: 0.6rem 0.8rem;
+      margin: 0.3rem 0;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid #f8bbd0;
+      position: relative;
+      transition: background-color 0.2s;
+    }
+    .materia.aprobada {
+      background-color: #c8e6c9;
+      text-decoration: line-through;
+      color: #2e7d32;
+    }
+    .materia.bloqueada {
+      background-color: #eeeeee;
+      color: #999;
+      border-style: dashed;
+      cursor: not-allowed;
+    }
+    .materia:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: -1.8em;
+      left: 0;
+      background-color: #444;
+      color: #fff;
+      font-size: 0.75em;
+      padding: 0.3em 0.5em;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-
-  <h1>Malla Lic. en Psicología – UNMDP</h1>
-
-  <div class="grid">
-    <!-- 1° Año – 1° Cuatrimestre -->
-    <div class="cuatrimestre" id="cuat-1-1">
-      <h3>1° año – 1° Cuatrimestre</h3>
-      <div class="materia" id="m-intro">Introducción a la Psicología</div>
-      <div class="materia" id="m-filo">Filosofía del Hombre</div>
-      <div class="materia" id="m-epist">Epistemología General</div>
-      <div class="materia" id="m-grap1">G.R.A.P. I</div>
-    </div>
-
-    <!-- 1° Año – 2° Cuatrimestre -->
-    <div class="cuatrimestre" id="cuat-1-2">
-      <h3>1° año – 2° Cuatrimestre</h3>
-      <div class="materia deshabilitada" id="m-hist">Historia Social de la Psicología</div>
-      <div class="materia deshabilitada" id="m-antrop">Antropología</div>
-      <div class="materia deshabilitada" id="m-bio">Biología Humana</div>
-      <div class="materia deshabilitada" id="m-introInv">Introducción a la Investigación Psicológica</div>
-      <div class="materia deshabilitada" id="m-pepp1">PEPP I</div>
-    </div>
-    <!-- Agregar el resto de los cuatrimestres...
-         (similar, con id's correspondientes) -->
-  </div>
+  <h1>Malla Curricular - Licenciatura en Psicología</h1>
+  <div id="malla" class="grid"></div>
 
   <script>
-    // Definimos correlatividades
-    const correl = {
-      m-hist: ['m-intro','m-filo','m-epist','m-hist'], // ejemplo
-      m-antrop: ['m-intro','m-hist'],
-      // agregá el resto según tu plan...
-    };
-
-    document.querySelectorAll('.materia').forEach(el => {
-      el.addEventListener('click', () => {
-        if (el.classList.contains('aprobada')) {
-          // reset
-          el.classList.remove('aprobada','cursada');
-          el.textContent = el.textContent.replace(' ✅','');
-        } else if (el.classList.contains('cursada')) {
-          el.classList.add('aprobada');
-          el.classList.remove('cursada');
-          el.textContent += ' ✅';
-          desbloquearCorrelativas(el.id);
-        } else {
-          el.classList.add('cursada');
+    const materias = {
+      "1° año": {
+        "1° Cuatrimestre": {
+          "Introducción a la Psicología": [],
+          "Filosofía del Hombre": [],
+          "Epistemología General": [],
+          "G.R.A.P. I": []
+        },
+        "2º Cuatrimestre": {
+          "Historia Social de la Psicología": [],
+          "Antropología": [],
+          "Biología Humana": [],
+          "Introducción a la Investigación Psicológica": [],
+          "PEPP I": []
         }
-      });
-    });
-
-    function desbloquearCorrelativas(id) {
-      // por cada materia que tenga una correlativa con este ID...
-      for (const mat in correl) {
-        const reqs = correl[mat];
-        if (reqs.includes(id)) {
-          // chequeamos si todas las reqs están en estado cursada o aprobada
-          const todasOk = reqs.every(rid => {
-            const r = document.getElementById(rid);
-            return r.classList.contains('cursada') || r.classList.contains('aprobada');
-          });
-          if (todasOk) {
-            const m = document.getElementById(mat);
-            m.classList.remove('deshabilitada');
-          }
+      },
+      "2° año": {
+        "1° Cuatrimestre": {
+          "Sistemas Psicológicos contemporáneos I": ["Introducción a la Psicología", "Filosofía del Hombre", "Epistemología General", "Historia Social de la Psicología"],
+          "Sociología": [],
+          "Introducción de la Teoría Psicoanalítica": ["Introducción a la Psicología", "Historia Social de la Psicología"],
+          "Núcleos Problemáticos": ["Epistemología General", "Introducción a la Investigación Psicológica"],
+          "Psicología del Desarrollo": ["Introducción a la Psicología", "Biología Humana"],
+          "G.R.A.P. II": ["Introducción a la Psicología", "G.R.A.P. I"]
+        },
+        "2º cuatrimestre": {
+          "Sistemas Psicológicos contemporáneos II": ["Sistemas Psicológicos contemporáneos I"],
+          "Problemas sociales Latinoamericanos": ["Antropología", "Sociología"],
+          "Neuropsicología": ["Introducción a la Psicología", "Biología Humana"],
+          "PEPP II": ["PEPP I"]
         }
       }
-    }
-  </script>
+      // Podés seguir agregando 3°, 4° y 5° de la misma forma.
+    };
 
+    const estado = JSON.parse(localStorage.getItem("estadoMaterias")) || {};
+
+    function renderMalla() {
+      const container = document.getElementById("malla");
+      container.innerHTML = "";
+
+      for (const [anio, cuatris] of Object.entries(materias)) {
+        const yearDiv = document.createElement("div");
+        yearDiv.className = "year";
+        const title = document.createElement("h2");
+        title.textContent = anio;
+        yearDiv.appendChild(title);
+
+        for (const [cuatri, materiasList] of Object.entries(cuatris)) {
+          const cuatriDiv = document.createElement("div");
+          cuatriDiv.className = "cuatrimestre";
+
+          const cuatriTitle = document.createElement("h3");
+          cuatriTitle.textContent = cuatri;
+          cuatriDiv.appendChild(cuatriTitle);
+
+          for (const [nombre, prereqs] of Object.entries(materiasList)) {
+            const div = document.createElement("div");
+            div.className = "materia";
+            div.textContent = nombre;
+
+            const faltantes = prereqs.filter(p => !estado[p]);
+            if (faltantes.length > 0) {
+              div.classList.add("bloqueada");
+              div.dataset.tooltip = "Faltan: " + faltantes.join(", ");
+            } else {
+              div.onclick = () => toggleMateria(nombre);
+            }
+
+            if (estado[nombre]) {
+              div.classList.add("aprobada");
+            }
+
+            cuatriDiv.appendChild(div);
+          }
+
+          yearDiv.appendChild(cuatriDiv);
+        }
+
+        container.appendChild(yearDiv);
+      }
+    }
+
+    function toggleMateria(materia) {
+      estado[materia] = !estado[materia];
+      localStorage.setItem("estadoMaterias", JSON.stringify(estado));
+      renderMalla();
+    }
+
+    renderMalla();
+  </script>
 </body>
 </html>
