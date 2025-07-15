@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Malla Psicología UNMDP</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .cuatrimestre { border: 1px solid #ccc; padding: 10px; border-radius: 8px; }
+    .materia {
+      padding: 8px; margin: 4px 0;
+      background: #f8d5e6; /* rosa claro: pendiente */
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .materia.cursada { background: #e090ad; } /* rosa fuerte */
+    .materia.aprobada { background: #a8e8e3; text-decoration: line-through; }
+    .materia.deshabilitada { opacity: 0.4; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Malla Lic. en Psicología – UNMDP</h1>
+
+  <div class="grid">
+    <!-- 1° Año – 1° Cuatrimestre -->
+    <div class="cuatrimestre" id="cuat-1-1">
+      <h3>1° año – 1° Cuatrimestre</h3>
+      <div class="materia" id="m-intro">Introducción a la Psicología</div>
+      <div class="materia" id="m-filo">Filosofía del Hombre</div>
+      <div class="materia" id="m-epist">Epistemología General</div>
+      <div class="materia" id="m-grap1">G.R.A.P. I</div>
+    </div>
+
+    <!-- 1° Año – 2° Cuatrimestre -->
+    <div class="cuatrimestre" id="cuat-1-2">
+      <h3>1° año – 2° Cuatrimestre</h3>
+      <div class="materia deshabilitada" id="m-hist">Historia Social de la Psicología</div>
+      <div class="materia deshabilitada" id="m-antrop">Antropología</div>
+      <div class="materia deshabilitada" id="m-bio">Biología Humana</div>
+      <div class="materia deshabilitada" id="m-introInv">Introducción a la Investigación Psicológica</div>
+      <div class="materia deshabilitada" id="m-pepp1">PEPP I</div>
+    </div>
+    <!-- Agregar el resto de los cuatrimestres...
+         (similar, con id's correspondientes) -->
+  </div>
+
+  <script>
+    // Definimos correlatividades
+    const correl = {
+      m-hist: ['m-intro','m-filo','m-epist','m-hist'], // ejemplo
+      m-antrop: ['m-intro','m-hist'],
+      // agregá el resto según tu plan...
+    };
+
+    document.querySelectorAll('.materia').forEach(el => {
+      el.addEventListener('click', () => {
+        if (el.classList.contains('aprobada')) {
+          // reset
+          el.classList.remove('aprobada','cursada');
+          el.textContent = el.textContent.replace(' ✅','');
+        } else if (el.classList.contains('cursada')) {
+          el.classList.add('aprobada');
+          el.classList.remove('cursada');
+          el.textContent += ' ✅';
+          desbloquearCorrelativas(el.id);
+        } else {
+          el.classList.add('cursada');
+        }
+      });
+    });
+
+    function desbloquearCorrelativas(id) {
+      // por cada materia que tenga una correlativa con este ID...
+      for (const mat in correl) {
+        const reqs = correl[mat];
+        if (reqs.includes(id)) {
+          // chequeamos si todas las reqs están en estado cursada o aprobada
+          const todasOk = reqs.every(rid => {
+            const r = document.getElementById(rid);
+            return r.classList.contains('cursada') || r.classList.contains('aprobada');
+          });
+          if (todasOk) {
+            const m = document.getElementById(mat);
+            m.classList.remove('deshabilitada');
+          }
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
